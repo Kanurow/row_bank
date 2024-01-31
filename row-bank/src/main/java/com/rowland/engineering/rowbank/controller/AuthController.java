@@ -1,11 +1,11 @@
 package com.rowland.engineering.rowbank.controller;
 
-
 import com.rowland.engineering.rowbank.dto.ApiResponse;
 import com.rowland.engineering.rowbank.dto.JwtAuthenticationResponse;
 import com.rowland.engineering.rowbank.dto.LoginRequest;
 import com.rowland.engineering.rowbank.dto.RegisterRequest;
 import com.rowland.engineering.rowbank.exception.AppException;
+import com.rowland.engineering.rowbank.model.BankName;
 import com.rowland.engineering.rowbank.model.Role;
 import com.rowland.engineering.rowbank.model.RoleName;
 import com.rowland.engineering.rowbank.model.User;
@@ -79,8 +79,9 @@ public class AuthController {
             return new ResponseEntity<>(new ApiResponse(false, "Email Address already in use!"),
                     HttpStatus.BAD_REQUEST);
         }
+
         String accountNumber = generateAccountNumber();
-        User user = new User(registerRequest.getFirstName(), registerRequest.getLastName(),
+        User user = new User(registerRequest.getBankName(), registerRequest.getFirstName(), registerRequest.getLastName(),
                 registerRequest.getDateOfBirth(), registerRequest.getUsername(),
                 registerRequest.getEmail(), registerRequest.getPassword(),
                 registerRequest.getOpeningBalance()
@@ -88,6 +89,7 @@ public class AuthController {
             
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setAccountNumber(accountNumber);
+
 
 
         Role userRole;
@@ -117,7 +119,7 @@ public class AuthController {
     private String generateAccountNumber() {
         Random random = new Random();
         int remainingDigits = random.nextInt(100000000);
-        return String.format("00%08d", remainingDigits);
+        return String.format("22%08d", remainingDigits);
     }
 
 

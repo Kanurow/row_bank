@@ -7,9 +7,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -18,15 +18,13 @@ public class UserPrincipal implements UserDetails {
     private Long id;
     private String firstName;
     private String lastName;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
     private String username;
 
     private String mobile;
 
     private String vendor;
     private String companyName;
-
-
 
     @JsonIgnore
     private String email;
@@ -36,7 +34,7 @@ public class UserPrincipal implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(Long id, String firstName, String lastName, Date dateOfBirth, String username, String email,
+    public UserPrincipal(Long id, String firstName, String lastName, LocalDate dateOfBirth, String username, String email,
                          String password, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.firstName = firstName;

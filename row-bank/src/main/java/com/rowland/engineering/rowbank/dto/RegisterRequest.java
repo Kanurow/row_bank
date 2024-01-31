@@ -1,12 +1,12 @@
 package com.rowland.engineering.rowbank.dto;
 
+import com.rowland.engineering.rowbank.model.BankName;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.hibernate.annotations.NaturalId;
-
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -21,7 +21,9 @@ public class RegisterRequest {
     @Size(min = 2,max = 40, message = "Last name should be between two characters and forty characters")
     private String lastName;
 
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
+
+    private BankName bankName;
 
     @NotBlank(message ="Username must not be blank")
     @Size(min = 2,max = 40 , message = "Last name should be between two characters and forty characters")
@@ -29,8 +31,6 @@ public class RegisterRequest {
 
     @PositiveOrZero
     private BigDecimal openingBalance;
-
-
     @Email(message = "Enter a valid email")
     private String email;
 

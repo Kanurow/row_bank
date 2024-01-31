@@ -28,7 +28,13 @@ public class Transaction {
     private Long id;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
+
+    @Enumerated(EnumType.STRING)
+    private BankName bankName;
+
+
     @Min(value = 50)
     private BigDecimal amount;
     @PastOrPresent

@@ -2,9 +2,10 @@ package com.rowland.engineering.rowbank.controller;
 
 
 import com.rowland.engineering.rowbank.dto.*;
+import com.rowland.engineering.rowbank.security.CurrentUser;
+import com.rowland.engineering.rowbank.security.UserPrincipal;
 import com.rowland.engineering.rowbank.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +20,10 @@ public class UserController {
     @Operation(
             summary = "Make deposit into user personal account"
     )
-    @PatchMapping("/make-deposit/{userId}")
-    public ResponseEntity<ApiResponse> depositIntoUserAccount(@Valid @RequestBody MakeDeposit deposit, @PathVariable Long userId) {
-        userService.makeDeposit(deposit, userId);
+    @PatchMapping("/make-deposit")
+    public ResponseEntity<ApiResponse> depositIntoUserAccount(@CurrentUser UserPrincipal currentUser,
+                                                              @RequestBody MakeDeposit deposit) {
+        userService.makeDeposit(deposit, currentUser);
         return ResponseEntity.ok(new ApiResponse(true,
                 "Account successfully credited with: #"+ deposit.getDepositAmount()));
     }
@@ -33,6 +35,15 @@ public class UserController {
     @GetMapping("/{id}")
     public Optional<UserResponse> getUserById(@PathVariable(value = "id") Long userId) {
         return userService.findUserDetails(userId);
+    }
+
+    @Operation(
+            description = "Get user by account number or email",
+            summary = "Returns user by providing user id"
+    )
+    @GetMapping("/find-user/{accountNumberOrEmail}")
+    public UserSummary getUserByAccountNumberOrEmail(@PathVariable(value = "accountNumberOrEmail") String accountNumberOrEmail) {
+        return userService.findUserByAccountNumberOrEmail(accountNumberOrEmail);
     }
 
 

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,10 +51,16 @@ public class User extends DateAudit {
     private String accountNumber;
 
     @PastOrPresent(message = "Date of birth cannot be in future")
-    private Date dateOfBirth;
+    @Temporal(TemporalType.DATE)
+    private LocalDate dateOfBirth;
 
+    @NaturalId
     @Email(message = "Must be a valid email address")
     private String email;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private BankName bankName;
 
     @DecimalMin(value = "0.0", message = "Balance must be 0.0 or greater")
     private BigDecimal balance;
@@ -68,8 +74,9 @@ public class User extends DateAudit {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    public User(String firstName, String lastName, Date dateOfBirth,
+    public User(BankName bankName,String firstName, String lastName, LocalDate dateOfBirth,
                 String username, String email, String password, BigDecimal balance) {
+        this.bankName = bankName;
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
