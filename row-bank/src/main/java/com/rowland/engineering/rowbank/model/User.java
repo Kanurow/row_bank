@@ -3,20 +3,20 @@ package com.rowland.engineering.rowbank.model;
 import com.rowland.engineering.rowbank.model.audit.DateAudit;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.NaturalId;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 @NoArgsConstructor
 @Builder
-@Data
 @Entity
 @AllArgsConstructor
 @Table(name = "users_table", uniqueConstraints = {
@@ -74,6 +74,9 @@ public class User extends DateAudit {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Saving> savings = new ArrayList<>();
+
     public User(BankName bankName,String firstName, String lastName, LocalDate dateOfBirth,
                 String username, String email, String password, BigDecimal balance) {
         this.bankName = bankName;
@@ -84,5 +87,17 @@ public class User extends DateAudit {
         this.email = email;
         this.password = password;
         this.balance = balance;
+    }
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", bankName='" + bankName + '\'' +
+                ", balance='" + balance + '\'' +
+                ", dateOfBirth='" + dateOfBirth + '\'' +
+                '}';
     }
 }

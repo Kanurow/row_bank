@@ -32,7 +32,7 @@ import java.util.Random;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication - Registration /Sign In")
 public class AuthController {

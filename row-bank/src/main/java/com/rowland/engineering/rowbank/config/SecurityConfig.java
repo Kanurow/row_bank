@@ -56,20 +56,25 @@ public class SecurityConfig {
                         exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**",
-                                "/v3/api-docs",
+                        .requestMatchers("/api/v1/auth/**",
                                 "/actuator/**",
                                 "/prometheus/**",
+                                "/swagger-resources",
+                                "/swagger-resources/**",
+                                "/configuration/ui",
+                                "/configuration/security",
+                                "/webjars/**",
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
+                                "/v2/api-docs",
                                 "/swagger-ui/**",
-                                "swagger-ui.html")
+                                "/swagger-ui.html")
                         .permitAll()
                         .anyRequest().authenticated());
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
 
 
 }
