@@ -162,7 +162,9 @@ public class BankService {
 
         BigDecimal newAmount = userSaving.getAmount().add(savingRequest.getAmount());
         userSaving.setAmount(newAmount);
+        saver.setBalance(saver.getBalance().subtract(savingRequest.getAmount()));
 
+        userRepository.save(saver);
         SavingHistory savingHistory = SavingHistory.builder()
                     .date(LocalDateTime.now())
                     .type(TransactionType.CREDIT)
@@ -211,6 +213,30 @@ public class BankService {
                 .message("Withdrawal successful!")
                 .amount(withdrawFromSaving.getAmount())
                 .build();
+
+    }
+
+    public boolean deleteFlexibleSaving(Long id, UserPrincipal currentUser) {
+        User foundUser = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not exist/logged in"));
+        System.out.println(foundUser);
+        try {
+            Saving userSaving = savingRepository.findByIdAndUser(id, foundUser);
+            if (userSaving == null)
+                throw  new SavingNotFoundException("Saving does not exist for user");
+            BigDecimal allSavedBalance = userSaving.getAmount().add(userSaving.getInterestEarned());
+            BigDecimal totalEarned = foundUser.getBalance().add(allSavedBalance);
+            foundUser.setBalance(totalEarned);
+            System.out.println(totalEarned);
+            userRepository.save(foundUser);
+            savingRepository.deleteById(id);
+            return true;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+
 
     }
 }

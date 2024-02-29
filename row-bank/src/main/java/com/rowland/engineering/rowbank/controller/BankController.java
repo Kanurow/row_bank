@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -62,5 +64,16 @@ public class BankController {
         return bankService.withdrawFromFlexibleSaving(withdrawFromSaving, currentUser);
     }
 
+    @Operation(
+            summary = "Deletes flexible saving plan and credits earned interest and base balance to user"
+    )
+    @DeleteMapping("/delete-flexible-saving/{id}")
+    private ResponseEntity<String> deleteFlexibleSaving(@Valid @CurrentUser UserPrincipal currentUser,
+                                                      @PathVariable(value = "id") Long id) {
+        boolean isDeleted = bankService.deleteFlexibleSaving(id, currentUser);
+        if (isDeleted)
+            return new ResponseEntity<>("Successfully deleted", HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("Error! Not found", HttpStatus.NOT_FOUND);
+    }
 
 }
