@@ -5,6 +5,7 @@ import com.rowland.engineering.rowbank.dto.JwtAuthenticationResponse;
 import com.rowland.engineering.rowbank.dto.LoginRequest;
 import com.rowland.engineering.rowbank.dto.RegisterRequest;
 import com.rowland.engineering.rowbank.exception.AppException;
+import com.rowland.engineering.rowbank.exception.UserNotFoundException;
 import com.rowland.engineering.rowbank.model.Role;
 import com.rowland.engineering.rowbank.model.RoleName;
 import com.rowland.engineering.rowbank.model.User;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,8 +28,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Random;
+import java.util.Optional;
 
 @CrossOrigin("*")
 @RestController
@@ -45,29 +49,59 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
+    private static final SecureRandom random = new SecureRandom();
+    private static final int MAX_FAILED_ATTEMPTS = 3;
 
 
     @Operation(
-            summary = "Enables user log in - Users can user either username or email address"
+            summary = "Enables user log in - Users can sign in using username or email address"
     )
-    @PostMapping("/signin")
+    @PostMapping("/sign_in")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail(),
-                        loginRequest.getPassword()
-                )
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+        User user = userRepository.findByUsernameOrEmail(loginRequest.getUsernameOrEmail(), loginRequest.getUsernameOrEmail())
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + loginRequest.getUsernameOrEmail()));
+
+        if (user.isAccountLocked()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Account is locked due to multiple failed login attempts. Please contact support."));
+        }
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsernameOrEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+
+            user.setFailedLoginAttempts(0);
+            user.setLastLoginAttempt(null);
+            userRepository.save(user);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = tokenProvider.generateToken(authentication);
+            return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+
+        } catch (BadCredentialsException e) {
+            user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
+            user.setLastLoginAttempt(LocalDateTime.now());
+
+            if (user.getFailedLoginAttempts() >= MAX_FAILED_ATTEMPTS) {
+                user.setAccountLocked(true);
+            }
+
+            userRepository.save(user);
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, "Invalid username or password. Attempts remaining: " + (MAX_FAILED_ATTEMPTS - user.getFailedLoginAttempts())));
+        }
     }
 
 
     @Operation(
             summary = "Enables user registration - To sign up with admin role, add `row` to email field."
     )
-    @PostMapping("/signup")
+    @PostMapping("/sign_up")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         if(userRepository.existsByUsername(registerRequest.getUsername())) {
             return new ResponseEntity<>(new ApiResponse(false, "Username is already taken!"),
@@ -80,6 +114,11 @@ public class AuthController {
         }
 
         String accountNumber = generateAccountNumber();
+        Optional<User> foundUser = userRepository.findByAccountNumber(accountNumber);
+        while (foundUser.isEmpty()) {
+            accountNumber = generateAccountNumber();
+        }
+
         User user = new User(registerRequest.getBankName(), registerRequest.getFirstName(), registerRequest.getLastName(),
                 registerRequest.getDateOfBirth(), registerRequest.getUsername(),
                 registerRequest.getEmail(), registerRequest.getPassword(),
@@ -100,6 +139,7 @@ public class AuthController {
         }
 
         user.setRoles(Collections.singleton(userRole));
+        user.setAccountLocked(false);
 
         User savedUser = userRepository.save(user);
 
@@ -113,9 +153,16 @@ public class AuthController {
 
 
     private String generateAccountNumber() {
-        Random random = new Random();
-        int remainingDigits = random.nextInt(100000000);
-        return String.format("22%08d", remainingDigits);
+        String accountNumber;
+        do {
+            accountNumber = generateRawBankAccountNumber();
+        } while (userRepository.existsByAccountNumber(accountNumber));
+        return accountNumber;
+    }
+
+    private String generateRawBankAccountNumber() {
+        int randomNumber = random.nextInt(1_000_000_000);
+        return String.format("22%09d", randomNumber);
     }
 
 

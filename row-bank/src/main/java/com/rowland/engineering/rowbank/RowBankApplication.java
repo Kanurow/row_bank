@@ -1,6 +1,7 @@
 package com.rowland.engineering.rowbank;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -20,13 +21,22 @@ import java.util.TimeZone;
 })
 @SpringBootApplication
 public class RowBankApplication {
-	@PostConstruct
-	void init(){
-		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-	}
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(RowBankApplication.class, args);
+	}
+	@Value("${spring.profiles.active}")
+	private String activeProfile;
+
+	@PostConstruct
+	public void postConstruct() {
+		System.out.println("Active Profile: " + activeProfile);
+	}
+
+	@PostConstruct
+	void init(){
+		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 	}
 
 }

@@ -4,6 +4,7 @@ import com.rowland.engineering.rowbank.dto.*;
 import com.rowland.engineering.rowbank.model.Saving;
 import com.rowland.engineering.rowbank.security.UserPrincipal;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface IBankService {
@@ -16,4 +17,6 @@ public interface IBankService {
     SavingResponse createFixedSavingPlan(SavingRequest savingRequest, UserPrincipal currentUser);
     List<Saving> getAllFixedSavings();
     List<Saving> getAllFlexibleSavings();
+
+    BeneficiaryResponse getMtnCustomerDetails(String customerPhoneOrEmail) throws IOException, InterruptedException;
 }

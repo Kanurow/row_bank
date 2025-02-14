@@ -5,12 +5,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.NaturalId;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -37,6 +35,7 @@ public class User extends DateAudit {
     @NotBlank
     @Size(min = 2,max = 25)
     private String firstName;
+
     @NotBlank
     @Size(min = 2,max = 25)
     private String lastName;
@@ -48,6 +47,7 @@ public class User extends DateAudit {
 
     @NaturalId
     @NotBlank(message = "User must have an account number")
+    @Size(max = 10)
     private String accountNumber;
 
     @PastOrPresent(message = "Date of birth cannot be in future")
@@ -62,11 +62,16 @@ public class User extends DateAudit {
     @Enumerated(EnumType.STRING)
     private BankName bankName;
 
-    @DecimalMin(value = "0.0", message = "Balance must be 0.0 or greater")
+    @PositiveOrZero(message = "Balance must be 0.0 or greater")
+    @Digits(integer = 12, fraction = 2)
     private BigDecimal balance;
+
     @NotBlank
     private String password;
 
+    private boolean accountLocked;
+
+    private boolean isDeleted;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
@@ -74,6 +79,12 @@ public class User extends DateAudit {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+
+    @Column(name = "failed_login_attempts")
+    private int failedLoginAttempts = 0;
+
+    @Column(name = "last_login_attempt")
+    private LocalDateTime lastLoginAttempt;
 
     public User(BankName bankName,String firstName, String lastName, LocalDate dateOfBirth,
                 String username, String email, String password, BigDecimal balance) {
@@ -93,9 +104,6 @@ public class User extends DateAudit {
                 ", username='" + username + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", bankName='" + bankName + '\'' +
-                ", balance='" + balance + '\'' +
-                ", dateOfBirth='" + dateOfBirth + '\'' +
                 '}';
     }
 }

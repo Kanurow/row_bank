@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @NoArgsConstructor(force = true)
@@ -32,6 +33,15 @@ public class BankController {
     private BeneficiaryResponse getBeneficiaryDetails(@Valid @RequestBody BeneficiaryRequest beneficiaryRequest) {
         return bankService.getBeneficiaryDetails(beneficiaryRequest);
     }
+
+    @Operation(
+            summary = "Used for getting and confirming user details before making a transfer"
+    )
+    @GetMapping("/mtn/customer-details/{customerPhoneOrEmail}")
+    private BeneficiaryResponse getMtnCustomerDetails(@PathVariable String customerPhoneOrEmail) throws IOException, InterruptedException {
+        return bankService.getMtnCustomerDetails(customerPhoneOrEmail);
+    }
+
 
     @Operation(
             summary = "Used for getting all fixed savings in db"

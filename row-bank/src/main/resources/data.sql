@@ -1,0 +1,11 @@
+INSERT INTO users_table (
+    first_name, last_name, username, account_number, date_of_birth, email, bank_name, balance, password, account_locked
+) VALUES (
+    'John', 'Doe', 'johndoe', '1234567890', '1980-01-01', 'john.doe@example.com', 'UBA', 1000.00, 'password123', false
+);
+
+INSERT INTO users (
+    first_name, last_name, username, account_number, date_of_birth, email, bank_name, balance, password, account_locked
+) VALUES (
+    'Jane', 'Smith', 'janesmith', '0234567890', '1990-05-15', 'jane.smith@example.com', 'RowBank', 500.50, 'password456', false
+);

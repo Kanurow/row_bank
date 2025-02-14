@@ -13,7 +13,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -295,6 +300,20 @@ public class BankService implements IBankService{
 
     public List<Saving> getAllFlexibleSavings() {
         return savingRepository.findAllBySavingType(SavingType.FLEXIBLE);
+    }
+
+    public BeneficiaryResponse getMtnCustomerDetails(String customerPhoneOrEmail) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.mtn.com/v1/customers/customers/" + customerPhoneOrEmail +  "+/kyc"))
+                .header("Content-Type", "application/json")
+                .header("transactionId", "")
+                .method("GET", HttpRequest.BodyPublishers.noBody())
+                .build();
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println(response.body());
+        return BeneficiaryResponse.builder()
+                .email(response.body())
+                .build();
     }
 }
 
