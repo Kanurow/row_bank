@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -43,7 +42,7 @@ public class InterestCalculator {
 
     private BigDecimal calculateDailyInterest(BigDecimal amount, BigDecimal interestRate) {
         BigDecimal daysInYear = BigDecimal.valueOf(365);
-        return amount.multiply(interestRate).multiply(daysInYear).divide(BigDecimal.valueOf(36500), RoundingMode.HALF_UP);
+        return amount.multiply(interestRate).multiply(daysInYear).divide(BigDecimal.valueOf(36500));
     }
 
 }
